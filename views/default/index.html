@@ -16,32 +16,51 @@
 <div class="main_content">
   {{if auth.user is not None:}}
   <div id="vue-div" class="display:none">
-    <!-- Your code goes here.  Remember to call $("#vue-div").show() once you get the data for the first time. -->
     <div class="container padded">
-      <div class="image_space threequarters">
+      <div v-if="!is_checkout" class="threequarters">
         <!-- Left part of the page -->
-        <div v-if="self_page">
-          <!-- Code to upload files, with control buttons -->
-          <div id="uploader_div" style="display:none">
+        
+        
+        <div >
+          <!-- UPLOADING -->
+          <div v-if="self_page" id="uploader_div" style="display:none">
             Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
           </div>
 
-          <button v-if="!is_uploading" v-on:click="open_uploader">Add Image <i class="fa fa-plus"></i></button>
-          <button v-if="is_uploading"  v-on:click="close_uploader">Cancel</button>
+          <button v-if="self_page && !is_uploading" v-on:click="open_uploader">
+           Add Image <i class="fa fa-plus"></i>
+          </button>
+          <button v-if="self_page && is_uploading"  v-on:click="close_uploader">
+            Cancel
+          </button>
+          
+          <button v-on:click="is_checkout = true" class="right">
+            Checkout
+          </button>
         </div>
 
-        <div class="image_container">
-          <!-- Put here the code to display the images -->
+        <div>
+          <!-- IMAGES DISPLAYED HERE -->
           <ul class="container">
-            <li v-if="!add_image_pending" v-show="imagelist.length != 0" v-for="image in imagelist" class="card lifted padded quarter">
+            <li  v-if="!add_image_pending" v-show="imagelist.length != 0" 
+                 v-for="image in imagelist" class="card lifted padded quarter" 
+                 id="image_card">
+                 
                 <img v-bind:src="image.image_url" 
-                    height="200px" width="200px" class="padded" id="image" />
+                    width="auto" class="" id="image" />
+                <p class="price">
+                    <b>$${print_price(image.price)}</b>
+                    <button>
+                        <i class="fa fa-shopping-cart"></i>
+                    </button>
+                    <i class="fa fa-check "></i>
+                </p>
             </li>
             
-            
             <li v-if="add_image_pending">
-                <p>Loading Gallery <i  class="fa fa-spinner fa-pulse"></i></p>
-            <li>
+                <h6>Please Wait .... Retrieving Gallery</h6>
+            </li>
+
             <li v-if="!add_image_pending" v-show="imagelist.length == 0">
                 There's nothing in this user's gallery
             </li>
@@ -49,6 +68,13 @@
           </ul>
         </div>
         <button v-if="!add_image_pending && has_more"  v-on:click="get_more">Get More?</button>
+      </div>
+      
+      <div v-if="is_checkout" id="cart_list" class="threequarters">
+        <button v-on:click="is_checkout = false" class="right">
+          Cancel
+        </button>
+        <h6>lets purchase things yaya</h6>
       </div>
 
       <div class="user_space quarter right">
@@ -58,19 +84,20 @@
           <tbody>
             <tr v-for="user in userlist" class="center">
               <td v-on:click="get_user_images(user.id)" >
-              <h6>${user.first_name} ${user.last_name}</h6>
-              </td>
-            <tr v-if="add_image_pending" class = "green">
-              <td>
-              <p>Loading Gallery <i  class="fa fa-spinner fa-pulse"></i></p>
+                <h6>${user.first_name} ${user.last_name}</h6>
               </td>
             </tr>
+            <tr v-if="add_image_pending" class = "add_image_pending">
+              <td>
+                <h6>Loading Gallery <i  class="fa fa-spinner fa-pulse"></i></h6>
+              </td>
             </tr>
           </tbody>
         </table>
         
       </div>
     </div>
+    <div>
   </div>
   {{else:}}
   <div>

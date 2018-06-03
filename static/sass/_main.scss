@@ -21,5 +21,18 @@ button:disabled {
 }
 
 img#image{
-    margin: 0 auto;
+  margin: 0 auto;
+}
+
+li#image_card {
+  padding-left: 15px;
+}
+
+tr.add_image_pending{
+  background-color: rgb(38, 166, 154);
+  color: white;
+}
+
+p.price{
+  margin-bottom: 0px;
 }

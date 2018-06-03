@@ -102,7 +102,8 @@ var app = function() {
                 self.vue.auth_id = data.auth_id;
                 enumerate(self.vue.userlist);
                 self.get_user_images(self.vue.auth_id);
-            });
+            }
+        );
     };
     
     self.get_user_images = function(user_id){
@@ -113,19 +114,19 @@ var app = function() {
         }
         self.vue.last_selection = user_id;
         $.post(user_images_url,
-        {
+            {
             user_id: user_id,
             start_idx: 0,
             end_idx: self.vue.get_more_multiple
-        },
-        function(data){
-            console.log('ended');
-            self.vue.imagelist = data.imagelist;
-            self.vue.has_more = data.has_more;
-            enumerate(self.vue.imagelist);
-            self.vue.add_image_pending = false;
-            
-        }
+            },
+            function(data){
+                console.log('ended');
+                self.vue.imagelist = data.imagelist;
+                self.vue.has_more = data.has_more;
+                enumerate(self.vue.imagelist);
+                self.vue.add_image_pending = false;
+                $("#vue-div").show();
+            }
         );
     };
     
@@ -150,6 +151,23 @@ var app = function() {
         }
         );
     }
+    
+    self.print_price = function(price){
+        var val = price.toString();
+        var dot_idx = val.indexOf(".");
+        if(dot_idx != -1){
+            var diff = val.length - 1 - dot_idx;
+            if((val.charAt(dot_idx + 1) != "") && (diff == 1)){
+                val = val + "0";
+            }
+        }else{
+            val = val + ".00"
+        }
+        
+        return val;
+    }
+    
+    
 
     self.vue = new Vue({
         el: "#vue-div",
@@ -166,6 +184,7 @@ var app = function() {
             self_page: true,
             auth_id: -1,
             get_more_multiple: 20,
+            is_checkout: false,
         },
         methods: {
             open_uploader: self.open_uploader,
@@ -175,12 +194,12 @@ var app = function() {
             get_users: self.get_users,
             get_user_images: self.get_user_images,
             get_more: self.get_more,
+            print_price: self.print_price,
         }
 
     });
 
     self.get_users();
-    $("#vue-div").show();
     
     return self;
 };

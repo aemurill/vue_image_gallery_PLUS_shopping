@@ -31,6 +31,22 @@ img#image {
   margin: 0 auto;
 }
 
+/* line 27, ../sass/_main.scss */
+li#image_card {
+  padding-left: 15px;
+}
+
+/* line 31, ../sass/_main.scss */
+tr.add_image_pending {
+  background-color: #26a69a;
+  color: white;
+}
+
+/* line 36, ../sass/_main.scss */
+p.price {
+  margin-bottom: 0px;
+}
+
 /* line 1, ../sass/_navbar.scss */
 .navbar-inverse {
   background-color: #dddddd;

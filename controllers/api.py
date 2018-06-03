@@ -40,8 +40,8 @@ def get_user_images():
                     created_on = r.created_on,
                     created_by = r.created_by,
                     image_url = r.image_url,
+                    price = r.price,
                 )
-                print(i)
                 imagelist.append(t)
             else:
                 has_more = True
