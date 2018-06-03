@@ -11,6 +11,7 @@ def add_image():
     image_id = db.user_images.insert(
         image_url = request.vars.image_url,
     )
+    db(db.user_images.image_url == None).delete()
     print('image added')
     # image = db.user_images(image_id)
     # print(image)
