@@ -36,6 +36,7 @@ var app = function() {
 
     self.upload_file = function (event) {
         // Reads the file.
+        self.vue.add_image_pending = true;
         var input = event.target;
         var file = document.getElementById("file_input").files[0];
         // We want to read the image file, and transform it into a data URL.
@@ -128,7 +129,7 @@ var app = function() {
             end_idx: self.vue.get_more_multiple
             },
             function(data){
-                console.log('ended');
+                console.log('got user images');
                 self.vue.imagelist = data.imagelist;
                 self.vue.has_more = data.has_more;
                 enumerate(self.vue.imagelist);
@@ -168,9 +169,9 @@ var app = function() {
     }
     
     /* PRICE FUNCTIONS */
-    self.print_price = function(price){
+    self.print_price = function(price, mode=0){
         var val = price.toString();
-        if(val == 0) return "Free!";
+        if(val == 0 && mode != 1) return "Free!";
         
         var dot_idx = val.indexOf(".");
         if(dot_idx != -1){
@@ -235,25 +236,25 @@ var app = function() {
                 found_idx = i;
             }
         }
-        // If it's there, just replace the quantity; otherwise, insert it.
+        // If it's not there, insert it.
         if (!already_present) {
             console.log('added idx '+image_idx+' to cart');
             found_idx = self.vue.cart.length;
             self.vue.cart.push(prod);
-            self.vue.cart[found_idx].image_url = self.vue.imagelist[image_idx].image_url;
         }
 
         // Updates the amount of products in the cart.
         self.update_cart();
         self.store_cart();
         self.vue.get_user_images(self.vue.current_gallery);
+        console.log('printing cart')
         console.log(self.vue.cart);
+        console.log('added to cart')
     }
+    
 
     self.is_in_cart = function(image_idx){
-        console.log('is_in_cart?');
-                var prod = self.vue.imagelist[image_idx];
-         // I need to put the product in the cart.
+        var prod = self.vue.imagelist[image_idx];
         // Check if it is already there.
         var in_cart = false;
         for (var i = 0; i < self.vue.cart.length; i++) {
@@ -261,7 +262,6 @@ var app = function() {
                 in_cart = true;
             }
         }
-        
         return in_cart;
     }
     
@@ -273,6 +273,33 @@ var app = function() {
         return t;
     }
     
+    self.remove_from_cart = function(image_id){
+        console.log('remove item id:'+image_id +' from cart?');
+         // I need to put the product in the cart.
+        // Check if it is already there.
+        var present = false;
+        var found_idx = 0;
+        for (var i = 0; i < self.vue.cart.length; i++) {
+            if (self.vue.cart[i].id === image_id) {
+                present = true;
+                found_idx = i;
+            }
+        }
+        // If it's there, remove it.
+        if (present) {
+            console.log('removed item id '+image_id+' from cart');
+            self.vue.cart.splice(found_idx, 1);
+        }
+
+        
+        // Updates the amount of products in the cart.
+        self.update_cart();
+        self.store_cart();
+        self.vue.get_user_images(self.vue.current_gallery);
+        console.log('printing cart')
+        console.log(self.vue.cart);
+        console.log('removed from cart');
+    }
     
     
     
@@ -315,6 +342,7 @@ var app = function() {
             is_in_cart: self.is_in_cart,
             show_selection: self.show_selection,
             get_cart_total: self.get_cart_total,
+            remove_from_cart: self.remove_from_cart,
         }
 
     });
