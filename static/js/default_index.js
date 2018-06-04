@@ -301,7 +301,22 @@ var app = function() {
         console.log('removed from cart');
     }
     
-    
+    /* STRIPE FUNCTIONS */
+    self.go_to_checkout = function(){
+        console.log('go to checkout');
+        self.vue.is_checkout = true;
+        self.stripe_instance = StripeCheckout.configure({
+                key: 'pk_test_TBdt1FhaDCKdbuyZyTPkJmJZ',    //put your own publishable key here
+                image: 'https://stripe.com/img/documentation/checkout/marketplace.png',
+                locale: 'auto',
+                token: function(token, args) {
+                    console.log('got a token. sending data to localhost.');
+                    self.stripe_token = token;
+                    self.customer_info = args;
+                    self.send_data_to_server();
+                }
+            });
+    }
     
     /* =========== VUE ============ */
     self.vue = new Vue({
@@ -343,12 +358,14 @@ var app = function() {
             show_selection: self.show_selection,
             get_cart_total: self.get_cart_total,
             remove_from_cart: self.remove_from_cart,
+            go_to_checkout: self.go_to_checkout,
         }
 
     });
 
     /* INIT SCRIPT */
     self.get_users();
+    self.read_cart();
     
     return self;
 };

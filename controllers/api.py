@@ -49,7 +49,6 @@ def get_user_images():
 
         print('got user images')
         # print (len(imagelist))
-        print(imagelist[0])
     else:
         print('got no user images')
     return response.json(dict(

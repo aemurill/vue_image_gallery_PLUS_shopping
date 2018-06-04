@@ -3,6 +3,7 @@
 {{block head}}
 
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
+<script src="https://checkout.stripe.com/checkout.js"></script>
 <script>
   // Define your URLs here.
   var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
@@ -39,7 +40,7 @@
             Submit
           </button>
           
-          <button v-on:click="is_checkout = true" class="right">
+          <button v-if="!is_uploading" v-on:click="go_to_checkout() " class="right">
             Shopping Cart
           </button>
           <button id="psuedobutton" v-if="!self_page && !is_checkout">
@@ -135,21 +136,21 @@
             <tbody>
               <tr v-for="user in userlist" class="center">
                 <!-- display logged in user's name, Unselected -->
-                <td v-if="user.id == auth_id && user.id != last_selection" v-on:click="is_checkout = false; get_user_images(user.id)"
+                <td v-if="user.id == auth_id && user.id != last_selection" v-on:click="get_user_images(user.id)"
                     style="background-color:rgb(38, 166, 154)">
                   <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
                 </td>
                 <!-- display other user's name, Unselected -->
-                <td v-if="user.id != auth_id && user.id != last_selection" v-on:click="is_checkout = false; get_user_images(user.id)" >
+                <td v-if="user.id != auth_id && user.id != last_selection" v-on:click="get_user_images(user.id)" >
                   <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
                 </td>
                 <!-- display logged in user's name, Selected -->
-                <td v-if="user.id == auth_id && user.id == last_selection" v-on:click="is_checkout = false; get_user_images(user.id)"
+                <td v-if="user.id == auth_id && user.id == last_selection" v-on:click="get_user_images(user.id)"
                     style="background-color:rgb(52, 239, 221)">
                   <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
                 </td>
                 <!-- display other user's name, Selected -->
-                <td v-if="user.id != auth_id && user.id == last_selection" v-on:click="is_checkout = false; get_user_images(user.id)"
+                <td v-if="user.id != auth_id && user.id == last_selection" v-on:click="get_user_images(user.id)"
                     style="background-color:#ddd">
                   <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
                 </td>
