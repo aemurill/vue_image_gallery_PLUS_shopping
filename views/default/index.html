@@ -93,13 +93,16 @@
               Checkout
             </button>
             <button v-on:click="is_checkout = false" class="right">
-              Cancel
+              Return to Shop
             </button>
         </div>
         <div>
           <!-- CART DISPLAYED HERE -->
           <ul class="container">
-            <li  v-show="cart.length != 0" 
+            <li v-if="cart.length == 0">
+              <h6>Cart is Empty</h6>
+            </li>
+            <li  v-if="cart.length != 0" 
                  v-for="image in cart" class="lifted padded quarter" 
                  id="image_card">
                  
@@ -118,22 +121,59 @@
       
       <div class="user_space quarter right">
         <!-- Right part of the page -->
-        <p><b>Click on a Name to view a gallery</b></p>
-        <table class="fill" id="user_selector">
-          <tbody>
-            <tr v-for="user in userlist" class="center">
-              <td v-on:click="is_checkout = false; get_user_images(user.id)" >
-                <h6>${user.first_name} ${user.last_name}</h6>
-              </td>
-            </tr>
-            <tr v-if="add_image_pending" class = "add_image_pending">
-              <td>
-                <h6>Processing <i  class="fa fa-spinner fa-pulse"></i></h6>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <div v-if="!is_checkout">
+          <p><b>Click on a Name to view a gallery</b></p>
+          <table class="fill" id="user_selector">
+            <tbody>
+              <tr v-for="user in userlist" class="center">
+                <!-- display logged in user's name, Unselected -->
+                <td v-if="user.id == auth_id && user.id != last_selection" v-on:click="is_checkout = false; get_user_images(user.id)"
+                    style="background-color:rgb(38, 166, 154)">
+                  <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
+                </td>
+                <!-- display other user's name, Unselected -->
+                <td v-if="user.id != auth_id && user.id != last_selection" v-on:click="is_checkout = false; get_user_images(user.id)" >
+                  <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
+                </td>
+                <!-- display logged in user's name, Selected -->
+                <td v-if="user.id == auth_id && user.id == last_selection" v-on:click="is_checkout = false; get_user_images(user.id)"
+                    style="background-color:rgb(52, 239, 221)">
+                  <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
+                </td>
+                <!-- display other user's name, Selected -->
+                <td v-if="user.id != auth_id && user.id == last_selection" v-on:click="is_checkout = false; get_user_images(user.id)"
+                    style="background-color:#ddd">
+                  <h6>${user.first_name} ${user.last_name} ${show_selection(user.id)}</h6>
+                </td>
+                
+              </tr>
+              <tr v-if="add_image_pending" class = "add_image_pending">
+                <td>
+                  <h6>Processing <i  class="fa fa-spinner fa-pulse"></i></h6>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         
+        <!-- is_checkout -->
+        <div v-if="is_checkout">
+          <p><b>Your Cart</b></p>
+          <table class="fill" id="user_selector">
+            <tbody>
+              <tr v-for="item in cart" class="center">
+                <td>
+                  <h6>${item._idx + 1} <i>${print_price(item.price)}</i></h6>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <h6>Total: ${print_price(get_cart_total())}</h6>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     <div>

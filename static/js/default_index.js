@@ -160,6 +160,13 @@ var app = function() {
         );
     }
     
+    self.show_selection = function(user_id){
+        if(user_id == self.vue.last_selection){
+            return String.fromCharCode(0x25C0);
+        }
+        return ""
+    }
+    
     /* PRICE FUNCTIONS */
     self.print_price = function(price){
         var val = price.toString();
@@ -258,7 +265,13 @@ var app = function() {
         return in_cart;
     }
     
-    
+    self.get_cart_total = function(){
+        var t = 0.0;
+        for (var i = 0; i < self.vue.cart.length; i++) {
+            t += self.vue.cart[i].price;
+        }
+        return t;
+    }
     
     
     
@@ -299,7 +312,9 @@ var app = function() {
             store_cart: self.store_cart,
             update_cart: self.update_cart,
             set_price: self.set_price,
-            is_in_cart: self.is_in_cart
+            is_in_cart: self.is_in_cart,
+            show_selection: self.show_selection,
+            get_cart_total: self.get_cart_total,
         }
 
     });
