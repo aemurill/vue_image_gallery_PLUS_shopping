@@ -10,8 +10,10 @@ def add_image():
     print('adding image')
     image_id = db.user_images.insert(
         image_url = request.vars.image_url,
+        price = request.vars.price,
     )
     db(db.user_images.image_url == None).delete()
+    time.sleep(1) #DELAY SO NEW IMAGE APPEARS
     print('image added')
     # image = db.user_images(image_id)
     # print(image)
@@ -20,7 +22,6 @@ def add_image():
 @auth.requires_login()
 @auth.requires_signature()
 def get_user_images():
-    time.sleep(1)
     user_id = request.vars.user_id
     start_idx = int(request.vars.start_idx)
     end_idx = int(request.vars.end_idx)
@@ -87,3 +88,14 @@ def get_users():
         auth_id = auth_id,
     ))
     
+@auth.requires_login()
+@auth.requires_signature()
+def set_price():
+    print('editing price')
+    image_id = request.vars.image_id
+    new_price = float(request.vars.price)
+    print('new price should be: '+ str(new_price))
+    db(db.user_images.id == image_id).update(price = new_price)
+    print('price modified to: ' +
+          str(db(db.user_images.id == image_id).select().first().price))
+    return

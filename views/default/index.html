@@ -8,6 +8,7 @@
   var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
   var user_images_url = "{{=URL('api', 'get_user_images', user_signature=True)}}";
   var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
+  var set_price_url = "{{=URL('api', 'set_price', user_signature=True)}}";
   
 </script>
 
@@ -24,7 +25,8 @@
         <div >
           <!-- UPLOADING -->
           <div v-if="self_page" id="uploader_div" style="display:none">
-            Upload an image file: <input id="file_input" type="file" v-on:change="upload_file" accept="image/jpeg">
+            Upload an image file: <input id="file_input" type="file" accept="image/jpeg">
+            <input type="number" v-model="upload_price" min="0" step="0.01">
           </div>
 
           <button v-if="self_page && !is_uploading" v-on:click="open_uploader">
@@ -33,9 +35,15 @@
           <button v-if="self_page && is_uploading"  v-on:click="close_uploader">
             Cancel
           </button>
+          <button v-if="self_page && is_uploading"  v-on:click="upload_file">
+            Submit
+          </button>
           
           <button v-on:click="is_checkout = true" class="right">
-            Checkout
+            Shopping Cart
+          </button>
+          <button id="psuedobutton" v-if="!self_page && !is_checkout">
+            void <!-- A FAKE BUTTON FOR SPACING -->
           </button>
         </div>
 
@@ -43,21 +51,26 @@
           <!-- IMAGES DISPLAYED HERE -->
           <ul class="container">
             <li  v-if="!add_image_pending" v-show="imagelist.length != 0" 
-                 v-for="image in imagelist" class="card lifted padded quarter" 
+                 v-for="image in imagelist" class="lifted padded quarter" 
                  id="image_card">
                  
                 <img v-bind:src="image.image_url" 
-                    width="auto" class="" id="image" />
+                    width="auto" id="image" />
                 <p class="price">
-                    <b>$${print_price(image.price)}</b>
-                    <button>
+                    <b>${print_price(image.price)}</b>
+                    <button v-if="(!self_page && !is_in_cart(image._idx))" v-on:click="add_to_cart(image._idx)">
                         <i class="fa fa-shopping-cart"></i>
                     </button>
-                    <i class="fa fa-check "></i>
+                    <i v-if="!self_page && is_in_cart(image._idx)" class="fa fa-check "></i>
+                    
+                    <input v-if="self_page" v-model="image.price" type="number" min="0" step="0.01" 
+                           v-on:blur="set_price(image._idx)" style="border: black 1px solid" />
+                    
                 </p>
             </li>
             
             <li v-if="add_image_pending">
+                <!-- LOADING -->
                 <h6>Please Wait .... Retrieving Gallery</h6>
             </li>
 
@@ -67,29 +80,55 @@
             
           </ul>
         </div>
-        <button v-if="!add_image_pending && has_more"  v-on:click="get_more">Get More?</button>
+        <!-- get more -->
+        <button v-if="!add_image_pending && has_more"  v-on:click="get_more">Show More</button>
       </div>
       
+      
+      
       <div v-if="is_checkout" id="cart_list" class="threequarters">
-        <button v-on:click="is_checkout = false" class="right">
-          Cancel
-        </button>
-        <h6>lets purchase things yaya</h6>
+        <!-- CHECKOUT -->
+        <div height="34px">
+            <button>
+              Checkout
+            </button>
+            <button v-on:click="is_checkout = false" class="right">
+              Cancel
+            </button>
+        </div>
+        <div>
+          <!-- CART DISPLAYED HERE -->
+          <ul class="container">
+            <li  v-show="cart.length != 0" 
+                 v-for="image in cart" class="lifted padded quarter" 
+                 id="image_card">
+                 
+                <img v-bind:src="image.image_url" 
+                    width="auto" id="image" />
+                <p class="price">
+                    <b>${print_price(image.price)}</b>
+                    <p>maybe a delete button?</p>
+                </p>
+            </li>
+            
+          </ul>
+        </div>
       </div>
 
+      
       <div class="user_space quarter right">
         <!-- Right part of the page -->
         <p><b>Click on a Name to view a gallery</b></p>
         <table class="fill" id="user_selector">
           <tbody>
             <tr v-for="user in userlist" class="center">
-              <td v-on:click="get_user_images(user.id)" >
+              <td v-on:click="is_checkout = false; get_user_images(user.id)" >
                 <h6>${user.first_name} ${user.last_name}</h6>
               </td>
             </tr>
             <tr v-if="add_image_pending" class = "add_image_pending">
               <td>
-                <h6>Loading Gallery <i  class="fa fa-spinner fa-pulse"></i></h6>
+                <h6>Processing <i  class="fa fa-spinner fa-pulse"></i></h6>
               </td>
             </tr>
           </tbody>

@@ -29,22 +29,35 @@ button:disabled:hover {
 /* line 23, ../sass/_main.scss */
 img#image {
   margin: 0 auto;
+  width: auto;
+  height: 200px;
 }
 
-/* line 27, ../sass/_main.scss */
+/* line 29, ../sass/_main.scss */
 li#image_card {
   padding-left: 15px;
+  margin-right: 0px;
 }
 
-/* line 31, ../sass/_main.scss */
+/* line 34, ../sass/_main.scss */
 tr.add_image_pending {
   background-color: #26a69a;
   color: white;
 }
 
-/* line 36, ../sass/_main.scss */
+/* line 39, ../sass/_main.scss */
 p.price {
   margin-bottom: 0px;
+}
+
+/* line 43, ../sass/_main.scss */
+button#psuedobutton {
+  background-color: white;
+  color: white;
+}
+/* line 46, ../sass/_main.scss */
+button#psuedobutton:hover {
+  box-shadow: none;
 }
 
 /* line 1, ../sass/_navbar.scss */

@@ -7,6 +7,7 @@ var app = function() {
 
     Vue.config.silent = false; // show all warnings
 
+    /* HELPER FUNCTIONS */
     // Extends an array
     self.extend = function(a, b) {
         for (var i = 0; i < b.length; i++) {
@@ -15,8 +16,12 @@ var app = function() {
     };
 
     // Enumerates an array.
-    var enumerate = function(v) { var k=0; return v.map(function(e) {e._idx = k++;});};
+    var enumerate = function(v) {
+        var k=0; 
+        return v.map(function(e) {e._idx = k++;});
+    };
 
+    /* UPLOAD FUNCTIONS */
     self.open_uploader = function () {
         $("div#uploader_div").show();
         self.vue.is_uploading = true;
@@ -32,7 +37,7 @@ var app = function() {
     self.upload_file = function (event) {
         // Reads the file.
         var input = event.target;
-        var file = input.files[0];
+        var file = document.getElementById("file_input").files[0];
         // We want to read the image file, and transform it into a data URL.
         var reader = new FileReader();
 
@@ -84,6 +89,7 @@ var app = function() {
         $.post(add_image_url,
             {
             image_url: get_url,
+            price: self.vue.upload_price,
             },
             function(data){
                 console.log(get_url)
@@ -94,6 +100,7 @@ var app = function() {
         
     };
     
+    /* USER INFO FUNCTIONS */
     self.get_users = function(){
         //This function only ever called on page load
         $.getJSON(get_users_url,
@@ -107,6 +114,7 @@ var app = function() {
     };
     
     self.get_user_images = function(user_id){
+        self.vue.current_gallery = user_id;
         self.vue.add_image_pending = true;
         self.vue.self_page = false;
         if (self.vue.auth_id == user_id){
@@ -152,8 +160,11 @@ var app = function() {
         );
     }
     
+    /* PRICE FUNCTIONS */
     self.print_price = function(price){
         var val = price.toString();
+        if(val == 0) return "Free!";
+        
         var dot_idx = val.indexOf(".");
         if(dot_idx != -1){
             var diff = val.length - 1 - dot_idx;
@@ -164,11 +175,95 @@ var app = function() {
             val = val + ".00"
         }
         
-        return val;
+        return "$" + val;
+    }
+    
+    self.set_price = function(image_idx) {
+        $.post(set_price_url,
+            {
+            image_id: self.vue.imagelist[image_idx].id,
+            price: self.vue.imagelist[image_idx].price,
+            },
+            function(data){
+            }
+        )
+    }
+    
+    /* CART FUNCTIONS */
+    self.store_cart = function() {
+        localStorage.cart = JSON.stringify(self.vue.cart);
+    };
+
+    self.read_cart = function() {
+        if (localStorage.cart) {
+            self.vue.cart = JSON.parse(localStorage.cart);
+        } else {
+            self.vue.cart = [];
+        }
+        self.update_cart();
+    };
+
+    self.update_cart = function () {
+        enumerate(self.vue.cart);
+        var cart_size = 0;
+        var cart_total = 0;
+        for (var i = 0; i < self.vue.cart.length; i++) {
+            cart_size++;
+            cart_total += self.vue.cart[i].price;
+        }
+        self.vue.cart_size = cart_size;
+        self.vue.cart_total = cart_total;
+    };
+    
+    self.add_to_cart = function(image_idx){
+        console.log('add idx '+image_idx+' to cart?');
+        var prod = self.vue.imagelist[image_idx];
+         // I need to put the product in the cart.
+        // Check if it is already there.
+        var already_present = false;
+        var found_idx = 0;
+        for (var i = 0; i < self.vue.cart.length; i++) {
+            if (self.vue.cart[i].id === prod.id) {
+                already_present = true;
+                found_idx = i;
+            }
+        }
+        // If it's there, just replace the quantity; otherwise, insert it.
+        if (!already_present) {
+            console.log('added idx '+image_idx+' to cart');
+            found_idx = self.vue.cart.length;
+            self.vue.cart.push(prod);
+            self.vue.cart[found_idx].image_url = self.vue.imagelist[image_idx].image_url;
+        }
+
+        // Updates the amount of products in the cart.
+        self.update_cart();
+        self.store_cart();
+        self.vue.get_user_images(self.vue.current_gallery);
+        console.log(self.vue.cart);
+    }
+
+    self.is_in_cart = function(image_idx){
+        console.log('is_in_cart?');
+                var prod = self.vue.imagelist[image_idx];
+         // I need to put the product in the cart.
+        // Check if it is already there.
+        var in_cart = false;
+        for (var i = 0; i < self.vue.cart.length; i++) {
+            if (self.vue.cart[i].id === prod.id) {
+                in_cart = true;
+            }
+        }
+        
+        return in_cart;
     }
     
     
-
+    
+    
+    
+    
+    /* =========== VUE ============ */
     self.vue = new Vue({
         el: "#vue-div",
         delimiters: ['${', '}'],
@@ -178,6 +273,7 @@ var app = function() {
             img_url: null,
             userlist: [],
             imagelist: [],
+            cart: [],
             has_more: false,
             last_selection: null,
             add_image_pending: true,
@@ -185,6 +281,10 @@ var app = function() {
             auth_id: -1,
             get_more_multiple: 20,
             is_checkout: false,
+            cart_size: 0,
+            cart_total: 0,
+            upload_price: 0,
+            current_gallery: null,
         },
         methods: {
             open_uploader: self.open_uploader,
@@ -195,10 +295,16 @@ var app = function() {
             get_user_images: self.get_user_images,
             get_more: self.get_more,
             print_price: self.print_price,
+            add_to_cart: self.add_to_cart,
+            store_cart: self.store_cart,
+            update_cart: self.update_cart,
+            set_price: self.set_price,
+            is_in_cart: self.is_in_cart
         }
 
     });
 
+    /* INIT SCRIPT */
     self.get_users();
     
     return self;

@@ -22,10 +22,13 @@ button:disabled {
 
 img#image{
   margin: 0 auto;
+  width: auto;
+  height: 200px;
 }
 
 li#image_card {
   padding-left: 15px;
+  margin-right: 0px;
 }
 
 tr.add_image_pending{
@@ -35,4 +38,12 @@ tr.add_image_pending{
 
 p.price{
   margin-bottom: 0px;
+}
+
+button#psuedobutton{
+    background-color:white;
+    color:white;
+    &:hover{
+        box-shadow: none;
+    }
 }
