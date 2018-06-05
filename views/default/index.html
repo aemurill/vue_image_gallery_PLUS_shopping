@@ -11,13 +11,10 @@
   var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
   var set_price_url = "{{=URL('api', 'set_price', user_signature=True)}}";
   var purchase_url = "{{=URL('api', 'purchase', hmac_key=session.auth.hmac_key)}}"
-  console.log(purchase_url)
-  
 </script>
 
 {{end}}
 <div class="main_content">
-  {{=session.hmac_key}}
   {{if auth.user is not None:}}
   <div id="vue-div" class="display:none">
     <div class="container padded">

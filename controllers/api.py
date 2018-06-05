@@ -1,5 +1,5 @@
 import tempfile, time
-import traceback
+import traceback, json
 
 # Cloud-safe of uuid, so that many cloned servers do not all use the same uuids.
 from gluon.utils import web2py_uuid
@@ -117,17 +117,18 @@ def purchase():
     token = json.loads(request.vars.transaction_token)
     amount = float(request.vars.amount)
     print(amount)
-    try:
-        charge = stripe.Charge.create(
-            amount=int(amount * 100),
-            currency="usd",
-            source=token['id'],
-            description="Purchase",
-        )
-    except stripe.error.CardError as e:
-        logger.info("The card has been declined.")
-        logger.info("%r" % traceback.format_exc())
-        return "nok"
+    if amount > 0:
+        try:
+            charge = stripe.Charge.create(
+                amount=int(amount * 100),
+                currency="usd",
+                source=token['id'],
+                description="Purchase",
+            )
+        except stripe.error.CardError as e:
+            logger.info("The card has been declined.")
+            logger.info("%r" % traceback.format_exc())
+            return "nok"
     # db.customer_order.insert(
         # customer_info=request.vars.customer_info,
         # transaction_token=json.dumps(token),
