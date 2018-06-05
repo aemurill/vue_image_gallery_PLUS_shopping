@@ -10,12 +10,14 @@
   var user_images_url = "{{=URL('api', 'get_user_images', user_signature=True)}}";
   var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
   var set_price_url = "{{=URL('api', 'set_price', user_signature=True)}}";
+  var purchase_url = "{{=URL('api', 'purchase', hmac_key=session.auth.hmac_key)}}"
+  console.log(purchase_url)
   
 </script>
 
 {{end}}
-
 <div class="main_content">
+  {{=session.hmac_key}}
   {{if auth.user is not None:}}
   <div id="vue-div" class="display:none">
     <div class="container padded">
@@ -95,12 +97,12 @@
       <div v-if="is_checkout" id="cart_list" class="threequarters">
         <!-- CHECKOUT -->
         <div height="34px">
-            <button>
-              Checkout
-            </button>
-            <button v-on:click="is_checkout = false" class="right">
-              Return to Shop
-            </button>
+          <button id="psuedobutton">
+            void <!-- A FAKE BUTTON FOR SPACING PURPOSES-->
+          </button>
+          <button v-on:click="return_to_shop()" class="right">
+            Return to Shop
+          </button>
         </div>
         <div>
           <!-- CART DISPLAYED HERE -->
@@ -179,6 +181,11 @@
                 <td>
                   <h6>Total: ${print_price(get_cart_total())}</h6>
                 </td>
+                <div v-if="cart.length > 0" class="total_price">
+                  <button class="btn blue" v-on:click="pay()">
+                    <i class="fa fa-lg fa-credit-card"></i> Pay
+                  </button>
+                </div>
               </tr>
             </tbody>
           </table>

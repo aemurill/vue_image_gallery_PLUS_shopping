@@ -305,18 +305,63 @@ var app = function() {
     self.go_to_checkout = function(){
         console.log('go to checkout');
         self.vue.is_checkout = true;
+        var a;
+        var b;
+        var c;
+        var d;
         self.stripe_instance = StripeCheckout.configure({
                 key: 'pk_test_TBdt1FhaDCKdbuyZyTPkJmJZ',    //put your own publishable key here
                 image: 'https://stripe.com/img/documentation/checkout/marketplace.png',
                 locale: 'auto',
                 token: function(token, args) {
-                    console.log('got a token. sending data to localhost.');
+                    console.log('Got a token. sending data to localhost.');
                     self.stripe_token = token;
                     self.customer_info = args;
                     self.send_data_to_server();
                 }
             });
+        console.log(self.stripe_instance);
     }
+    
+    self.return_to_shop = function(){
+        console.log('go to shop');
+        self.vue.is_checkout = false;
+        self.stripe_instance.close();
+    }
+    
+    self.pay = function () {
+        self.stripe_instance.open({
+            name: "Your nice cart",
+            description: "Buy cart content",
+            billingAddress: true,
+            shippingAddress: true,
+            amount: Math.round(self.vue.cart_total * 100),
+        });
+    };
+
+    self.send_data_to_server = function () {
+        console.log("Payment for:", self.customer_info);
+        // Calls the server.
+        $.post(purchase_url,
+            {
+                customer_info: JSON.stringify(self.customer_info),
+                transaction_token: JSON.stringify(self.stripe_token),
+                amount: self.vue.cart_total,
+                cart: JSON.stringify(self.vue.cart),
+            },
+            function (data) {
+                // The order was successful.
+                // clear cart
+                self.vue.cart = [];
+                self.update_cart();
+                self.store_cart();
+                self.vue.is_checkout = false;
+                $.web2py.flash("Thank you for your purchase");
+            }
+        );
+    };
+    
+    
     
     /* =========== VUE ============ */
     self.vue = new Vue({
@@ -359,6 +404,9 @@ var app = function() {
             get_cart_total: self.get_cart_total,
             remove_from_cart: self.remove_from_cart,
             go_to_checkout: self.go_to_checkout,
+            pay: self.pay,
+            send_data_to_server: self.send_data_to_server,
+            return_to_shop: self.return_to_shop,
         }
 
     });

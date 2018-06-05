@@ -1,4 +1,5 @@
 import tempfile, time
+import traceback
 
 # Cloud-safe of uuid, so that many cloned servers do not all use the same uuids.
 from gluon.utils import web2py_uuid
@@ -98,3 +99,55 @@ def set_price():
     print('price modified to: ' +
           str(db(db.user_images.id == image_id).select().first().price))
     return
+    
+    
+@auth.requires_login()
+def purchase():
+    """Ajax function called when a customer orders and pays for the cart."""
+    print(session.auth.hmac_key)
+    print(URL.verify(request, hmac_key=session.auth.hmac_key))
+    
+    if not URL.verify(request, hmac_key=session.auth.hmac_key):
+        print('error in purchase')
+        raise HTTP(500)
+    # Creates the charge.
+    import stripe
+    # Your secret key.
+    stripe.api_key = myconf.get('stripe.private_key')
+    token = json.loads(request.vars.transaction_token)
+    amount = float(request.vars.amount)
+    print(amount)
+    try:
+        charge = stripe.Charge.create(
+            amount=int(amount * 100),
+            currency="usd",
+            source=token['id'],
+            description="Purchase",
+        )
+    except stripe.error.CardError as e:
+        logger.info("The card has been declined.")
+        logger.info("%r" % traceback.format_exc())
+        return "nok"
+    # db.customer_order.insert(
+        # customer_info=request.vars.customer_info,
+        # transaction_token=json.dumps(token),
+        # cart=request.vars.cart)
+    return "ok"
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
