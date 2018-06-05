@@ -356,6 +356,7 @@ var app = function() {
                 self.update_cart();
                 self.store_cart();
                 self.vue.is_checkout = false;
+                self.get_users();
                 $.web2py.flash("Thank you for your purchase");
             }
         );
