@@ -16,7 +16,7 @@ db.define_table('user_images',
                 Field('created_on', 'datetime', default=request.now),
                 Field('created_by', 'reference auth_user', default=auth.user_id),
                 Field('image_url'),
-                Field('price', type='float', default="5"), #specify price of user's image
+                Field('price', type='float'), #specify price of user's image
                 )
 # after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)

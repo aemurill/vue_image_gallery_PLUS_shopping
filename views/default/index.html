@@ -4,18 +4,18 @@
 
 <script src="{{=URL('static', 'js/vue.js')}}"></script>
 <script src="https://checkout.stripe.com/checkout.js"></script>
-<script>
-  // Define your URLs here.
-  var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
-  var user_images_url = "{{=URL('api', 'get_user_images', user_signature=True)}}";
-  var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
-  var set_price_url = "{{=URL('api', 'set_price', user_signature=True)}}";
-  var purchase_url = "{{=URL('api', 'purchase', hmac_key=session.auth.hmac_key)}}"
-</script>
 
 {{end}}
 <div class="main_content">
   {{if auth.user is not None:}}
+  <script>
+    // URLS DEFINED HERE AS HMAC_KEY REQUIRES LOGIN
+    var add_image_url = "{{=URL('api', 'add_image', user_signature=True)}}";
+    var user_images_url = "{{=URL('api', 'get_user_images', user_signature=True)}}";
+    var get_users_url = "{{=URL('api', 'get_users', user_signature=True)}}";
+    var set_price_url = "{{=URL('api', 'set_price', user_signature=True)}}";
+    var purchase_url = "{{=URL('api', 'purchase', hmac_key=session.auth.hmac_key)}}"
+  </script>
   <div id="vue-div" class="display:none">
     <div class="container padded">
       <div v-if="!is_checkout" class="threequarters">
@@ -26,7 +26,7 @@
           <!-- UPLOADING -->
           <div v-if="self_page" id="uploader_div" style="display:none">
             Upload an image file: <input id="file_input" type="file" accept="image/jpeg">
-            <input type="number" v-model="upload_price" min="0" step="0.01">
+            <input type="number" v-model="upload_price" placeholder="ENTER A PRICE OR LEAVE BLANK FOR DEFAULT [5.00]" min="0" step="0.01">
           </div>
 
           <button v-if="self_page && !is_uploading" v-on:click="open_uploader">
@@ -40,7 +40,7 @@
           </button>
           
           <button v-if="!is_uploading" v-on:click="go_to_checkout() " class="right">
-            Shopping Cart
+            Checkout
           </button>
           <button id="psuedobutton" v-if="!self_page && !is_checkout">
             void <!-- A FAKE BUTTON FOR SPACING PURPOSES-->
@@ -57,26 +57,24 @@
                 <img v-bind:src="image.image_url" 
                     width="auto" id="image" />
                 <p class="price">
-                    <b>${print_price(image.price)}</b>
+                    <b class="left" style="margin-right: 5px">${print_price(image.price)}</b>
                     <!-- Add to Cart button -->
-                    <button v-if="(!self_page && !is_in_cart(image._idx))" v-on:click="add_to_cart(image._idx)">
+                    <button class="right" v-if="(!is_in_cart(image._idx))" v-on:click="add_to_cart(image._idx)">
                         <i class="fa fa-shopping-cart"></i>
                     </button>
-                    
                     <!-- Display In Cart & Remove from Cart Button -->
-                    <button v-if="!self_page && is_in_cart(image._idx)" v-on:click="remove_from_cart(image.id)">
+                    <button class="right" v-if="is_in_cart(image._idx)" v-on:click="remove_from_cart(image.id)">
                         <i class="fa fa-check "></i>
                     </button>
-                    
                     <!-- Set Price if Self page -->
-                    <input v-if="self_page" v-model="image.price" type="number" min="0" step="0.01" 
+                    <input v-if="self_page" v-model="image.price" type="number" min="0" max="999999999" step="0.01" 
                            v-on:blur="set_price(image._idx)" style="border: black 1px solid" />
                 </p>
             </li>
             
             <li v-if="add_image_pending">
                 <!-- LOADING -->
-                <h6>Please Wait .... Retrieving Gallery</h6>
+                <h6>Please Wait .........</h6>
             </li>
 
             <li v-if="!add_image_pending" v-show="imagelist.length == 0">
@@ -116,7 +114,7 @@
                 <p class="price">
                     <b>${print_price(image.price)}</b>
                     <!-- Display In Cart Button -->
-                    <button v-if="!self_page" v-on:click="remove_from_cart(image.id)">
+                    <button v-on:click="remove_from_cart(image.id)">
                         <i class="fa fa-times "></i>
                     </button>
                 </p>
@@ -166,7 +164,12 @@
         
         <!-- is_checkout -->
         <div v-if="is_checkout">
-          <p><b>Your Cart</b></p>
+          <p>
+            <b>Your Cart</b>
+            <button v-if="cart.length > 0" class="btn right" v-on:click="pay()">
+              <i class="fa fa-lg fa-credit-card"></i> Pay
+            </button>
+          </p>
           <table class="fill" id="user_selector">
             <tbody>
               <tr v-for="item in cart" class="center">
@@ -178,11 +181,6 @@
                 <td>
                   <h6>Total: ${print_price(get_cart_total())}</h6>
                 </td>
-                <div v-if="cart.length > 0" class="total_price">
-                  <button class="btn blue" v-on:click="pay()">
-                    <i class="fa fa-lg fa-credit-card"></i> Pay
-                  </button>
-                </div>
               </tr>
             </tbody>
           </table>

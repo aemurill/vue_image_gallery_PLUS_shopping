@@ -36,9 +36,15 @@ var app = function() {
 
     self.upload_file = function (event) {
         // Reads the file.
+        console.log('upload file');
         self.vue.add_image_pending = true;
         var input = event.target;
         var file = document.getElementById("file_input").files[0];
+        if (!file) {
+            //failed to actually select a file
+            self.vue.add_image_pending = false;
+            return;
+        }
         // We want to read the image file, and transform it into a data URL.
         var reader = new FileReader();
 
@@ -53,7 +59,6 @@ var app = function() {
             // HTML, causing the display of the file image.
             self.vue.img_url = reader.result;
         }, false);
-
         if (file) {
             // Reads the file as a data URL.
             reader.readAsDataURL(file);
@@ -87,6 +92,7 @@ var app = function() {
 
 
     self.add_image = function(get_url){
+        if (self.vue.upload_price == null) self.vue.upload_price = 5;
         $.post(add_image_url,
             {
             image_url: get_url,
@@ -95,6 +101,7 @@ var app = function() {
             function(data){
                 console.log(get_url)
                 self.vue.get_user_images(self.vue.auth_id);
+                self.vue.upload_price = null;
             }
         )
         // console.log(get_url);
@@ -187,6 +194,7 @@ var app = function() {
     }
     
     self.set_price = function(image_idx) {
+        if (isNaN(self.vue.imagelist[image_idx].price)) return;
         $.post(set_price_url,
             {
             image_id: self.vue.imagelist[image_idx].id,
@@ -270,7 +278,19 @@ var app = function() {
         for (var i = 0; i < self.vue.cart.length; i++) {
             t += self.vue.cart[i].price;
         }
-        return t;
+        
+        function roundTo(n, digits) {
+            if (digits === undefined) {
+            digits = 0;
+        }
+
+        var multiplicator = Math.pow(10, digits);
+        n = parseFloat((n * multiplicator).toFixed(11));
+        var test =(Math.round(n) / multiplicator);
+        return +(test.toFixed(digits));
+        }
+        
+        return roundTo(t, 2);
     }
     
     self.remove_from_cart = function(image_id){
@@ -342,6 +362,7 @@ var app = function() {
     self.send_data_to_server = function () {
         console.log("Payment for:", self.customer_info);
         // Calls the server.
+        console.log(purchase_url);
         $.post(purchase_url,
             {
                 customer_info: JSON.stringify(self.customer_info),
@@ -384,7 +405,7 @@ var app = function() {
             is_checkout: false,
             cart_size: 0,
             cart_total: 0,
-            upload_price: 0,
+            upload_price: null,
             current_gallery: null,
         },
         methods: {

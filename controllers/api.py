@@ -104,7 +104,7 @@ def set_price():
 @auth.requires_login()
 def purchase():
     """Ajax function called when a customer orders and pays for the cart."""
-    print(session.auth.hmac_key)
+    print(session.hmac_key)
     print(URL.verify(request, hmac_key=session.auth.hmac_key))
     
     if not URL.verify(request, hmac_key=session.auth.hmac_key):
